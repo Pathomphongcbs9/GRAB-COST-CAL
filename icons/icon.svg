@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" fill="#1E6FD9"/>
+  <circle cx="420" cy="80" r="190" fill="#2F83EE"/>
+  <g transform="rotate(-6 256 256)">
+    <!-- receipt with torn bottom edge -->
+    <path d="M150 104 Q150 92 162 92 L350 92 Q362 92 362 104 L362 392
+             L344 410 L326 392 L309 410 L291 392 L274 410 L256 392 L238 410 L221 392 L203 410 L186 392 L168 410 L150 392 Z"
+          fill="#FFFFFF"/>
+    <rect x="182" y="126" width="148" height="12" rx="6" fill="#C9DAF1"/>
+    <rect x="182" y="152" width="96" height="12" rx="6" fill="#C9DAF1"/>
+    <text x="256" y="318" text-anchor="middle" font-family="DejaVu Sans" font-weight="bold" font-size="150" fill="#0F4FA8">฿</text>
+    <rect x="182" y="348" width="148" height="10" rx="5" fill="#C9DAF1"/>
+  </g>
+  <!-- profit badge -->
+  <circle cx="352" cy="352" r="60" fill="#17A35A" stroke="#1E6FD9" stroke-width="10"/>
+  <path d="M352 322 L378 352 L362 352 L362 382 L342 382 L342 352 L326 352 Z" fill="#FFFFFF"/>
+</svg>
