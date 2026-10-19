@@ -1,0 +1,29 @@
+{
+  "name": "POS บ้านๆ – คำนวณต้นทุนเมนูอาหาร",
+  "short_name": "POS บ้านๆ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E8F1FC",
+  "theme_color": "#1E6FD9",
+  "lang": "th",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

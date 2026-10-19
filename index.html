@@ -3,7 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>คำนวณต้นทุนเมนู Grab</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1E6FD9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="POS บ้านๆ">
+<title>POS บ้านๆ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
@@ -191,6 +198,7 @@ details.ord[open]{border-color:var(--frame)}
 .ord .its{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .ord .obody{padding:10px 12px 12px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:10px;font-size:14px}
 .ofoot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+header h1 .h1sub{display:inline-block;font-family:var(--f-body);font-size:15px;font-weight:500;letter-spacing:0;opacity:.88;margin-left:6px;vertical-align:middle}
 /* save order */
 .saverow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;border-top:1px solid var(--line);padding-top:14px}
 #orderNo{font-family:var(--f-num);background:var(--surface)}
@@ -232,7 +240,7 @@ body:not(.in) .who button{display:none}
 <div class="wrap">
   <header>
     <div>
-      <h1>คำนวณต้นทุนเมนู Grab</h1>
+      <h1>POS บ้านๆ <small class="h1sub">คำนวณต้นทุนเมนูอาหาร</small></h1>
       <p>บันทึกต้นทุนเมนูหลักและตัวเลือกเสริมไว้ครั้งเดียว แล้วเลือกตามที่ลูกค้าสั่ง เพื่อดูว่าออเดอร์นั้นร้านได้เงินจริงและกำไรเท่าไรหลังหักค่า GP</p>
     </div>
     <div class="who"><span id="who"></span><span class="status" id="status">กรุณาเข้าสู่ระบบ</span><button id="logout" type="button">ออกจากระบบ</button></div>
@@ -812,7 +820,7 @@ $('saveOrder').onclick=async()=>{
     $('orderNo').value='';order=[];commitOrder();
   }catch(e){
     const m=((e&&e.code)||'')+' '+((e&&e.message)||'');console.error('save order',e);
-    flash('saveMsg',/column|PGRST204|42703|schema cache/i.test(m)?'ฐานข้อมูลยังไม่ได้อัปเดต: รัน update-2-channels.sql ใน Supabase':'บันทึกไม่สำเร็จ: '+((e&&e.message)||'ลองกดอีกครั้ง'),true);
+    flash('saveMsg','บันทึกไม่สำเร็จ: '+(m.trim()||'ลองกดอีกครั้ง'),true);$('saveMsg')._t&&clearTimeout($('saveMsg')._t);
   }finally{btn.disabled=false}
 };
 
