@@ -105,7 +105,8 @@ details.mcard[open]{border-color:var(--frame)}
 .ing input[type=text]{background:var(--surface)}
 .mstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 @media (max-width:620px){.mstats{grid-template-columns:1fr 1fr}}
-.mfoot{display:flex;justify-content:flex-end}
+.mfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.mfoot .primary{min-width:140px}
 .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12.5px;font-family:var(--f-num);white-space:nowrap}
 .pill.good{background:var(--good-soft);color:var(--good)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.mid{background:var(--accent-soft);color:var(--accent)}
 /* table */
@@ -136,6 +137,17 @@ td.n{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 .pk-item[aria-pressed="true"] span::before{content:"✓ ";color:var(--accent)}
 .atools{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
 .atools label{flex:1 1 220px}
+.chtoggle .chip{flex:1 1 0;text-align:center;font-weight:600;padding:9px 12px}
+.pill.ch-grab{background:var(--good-soft);color:var(--good)}
+.pill.ch-shop{background:var(--accent-soft);color:var(--accent)}
+.feesbox{border:1.5px solid var(--line);border-radius:10px;background:var(--tint)}
+.feesbox summary{padding:10px 12px;cursor:pointer;font-weight:600;color:var(--head);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.feesbox summary small{font-weight:400;color:var(--muted)}
+.feesbox[open] summary{border-bottom:1px solid var(--line)}
+.feesbody{padding:12px;display:flex;flex-direction:column;gap:14px}
+.feesbody h2{font-size:15px}
+.feesbody input{background:var(--surface)}
+.ln.vatln{font-size:13px;padding-left:14px;color:var(--muted)}
 /* save order */
 .saverow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;border-top:1px solid var(--line);padding-top:14px}
 #orderNo{font-family:var(--f-num);background:var(--surface)}
@@ -198,13 +210,45 @@ body:not(.in) .who button{display:none}
     <button class="tab" role="tab" data-tab="menus" type="button">เมนูหลัก</button>
     <button class="tab" role="tab" data-tab="addons" type="button">ตัวเลือกเสริม</button>
     <button class="tab" role="tab" data-tab="report" type="button">สรุปยอดขาย</button>
-    <button class="tab" role="tab" data-tab="fees" type="button">ค่าธรรมเนียม Grab</button>
   </nav>
 
   <!-- ORDER -->
   <section id="tab-order" class="grid">
     <div class="panel">
       <h2>ออเดอร์ที่ลูกค้าสั่ง <small id="feeBrief"></small></h2>
+      <div class="chips chtoggle" id="chOrder" role="group" aria-label="ช่องทางขาย">
+        <button class="chip" type="button" data-c="grab">GrabFood</button>
+        <button class="chip" type="button" data-c="shop">ขายหน้าร้าน</button>
+      </div>
+      <label class="check" id="dineWrap" for="dineIn" hidden><input id="dineIn" type="checkbox"> ทานที่ร้าน (ไม่คิดค่ากล่อง)</label>
+    <details id="feesBox" class="feesbox">
+      <summary>ค่าธรรมเนียม Grab <small id="feeSum"></small></summary>
+      <div class="feesbody">
+    <div class="sec">
+      <h2>ค่า GP ของ Grab</h2>
+      <div class="chips" id="gpChips">
+        <button class="chip" type="button" data-gp="30">30%</button>
+        <button class="chip" type="button" data-gp="25">25%</button>
+        <button class="chip" type="button" data-gp="15">15%</button>
+        <button class="chip" type="button" data-gp="9">9%</button>
+      </div>
+      <div class="row2">
+        <label for="gp">GP ที่ร้านคุณจ่าย (%)<input id="gp" type="number" min="0" max="60" step="0.5"></label>
+        <label class="check" for="vat" style="align-self:end;padding-bottom:9px"><input id="vat" type="checkbox"> บวก VAT 7% ของค่า GP ค่าธรรมเนียมการตลาด และค่าโฆษณา</label>
+      </div>
+      <p class="hint">เช็กอัตราจริงของร้านในสัญญาหรือแอป GrabMerchant อัตรา 9% เป็นอัตราพิเศษของร้านที่เข้าร่วมแคมเปญไทยช่วยไทยพลัสกับ GrabFood</p>
+    </div>
+    <div class="sec">
+      <h2>โปรโมชัน ค่าโฆษณาและการตลาด</h2>
+      <div class="row2">
+        <label for="disc">ส่วนลดที่ร้านออกเอง (% ของยอดขาย)<input id="disc" type="number" min="0" max="90" step="1"></label>
+        <label for="mkt">ค่าธรรมเนียมการตลาดต่อออเดอร์ (บาท)<input id="mkt" type="number" min="0" step="0.5"></label>
+        <label for="ads">ค่าโฆษณา GrabAds ต่อออเดอร์ (บาท)<input id="ads" type="number" min="0" step="0.5"></label>
+      </div>
+      <p class="hint">ระบบคิด GP จากยอดหลังหักส่วนลดร้าน ค่าโฆษณาต่อออเดอร์ดูได้จากรายงานโฆษณาในแอป GrabMerchant หรือเอางบโฆษณาหารด้วยจำนวนออเดอร์</p>
+    </div>
+  </div>
+    </details>
       <label for="orderNo">เลขออเดอร์ (ไม่บังคับ)<input id="orderNo" type="text" autocomplete="off" placeholder="เช่น GF-123"></label>
       <div id="orderLines" class="sec"></div>
       <div class="chips">
@@ -218,17 +262,19 @@ body:not(.in) .who button{display:none}
       <p class="msg" id="saveMsg" aria-live="polite"></p>
     </div>
     <aside class="slip" aria-live="polite">
-      <h2>สรุปออเดอร์นี้</h2>
+      <h2 id="slipTitle">สรุปออเดอร์นี้</h2>
       <div class="lines" id="oItems"></div>
       <div class="lines">
-        <div class="ln total"><span>ยอดขายบน Grab</span><span id="oSub"></span></div>
+        <div class="ln total"><span id="oSubLbl">ยอดขายบน Grab</span><span id="oSub"></span></div>
         <div class="ln minus" id="oDiscRow"><span id="oDiscLbl">ส่วนลดร้าน</span><span id="oDisc"></span></div>
-        <div class="ln minus"><span id="oGpLbl">ค่า GP</span><span id="oGp"></span></div>
+        <div class="ln minus" id="oGpRow"><span id="oGpLbl">ค่า GP</span><span id="oGp"></span></div>
+        <div class="ln minus vatln" id="oVatGpRow"><span>VAT 7% ของค่า GP</span><span id="oVatGp"></span></div>
         <div class="ln minus" id="oMktRow"><span>ค่าธรรมเนียมการตลาด</span><span id="oMkt"></span></div>
-        <div class="ln minus" id="oVatRow"><span id="oVatLbl">VAT 7%</span><span id="oVat"></span></div>
+        <div class="ln minus vatln" id="oVatMktRow"><span>VAT 7% ของค่าการตลาด</span><span id="oVatMkt"></span></div>
+        <div class="ln minus" id="oAdsRow"><span>ค่าโฆษณาต่อออเดอร์</span><span id="oAds"></span></div>
+        <div class="ln minus vatln" id="oVatAdsRow"><span>VAT 7% ของค่าโฆษณา</span><span id="oVatAds"></span></div>
         <div class="ln total"><span>ร้านได้รับจริง</span><span id="oNet"></span></div>
         <div class="ln minus"><span>ต้นทุนวัตถุดิบและแพ็กเกจ</span><span id="oCost"></span></div>
-        <div class="ln minus" id="oAdsRow"><span>ค่าโฆษณาต่อออเดอร์</span><span id="oAds"></span></div>
       </div>
       <div class="big" id="oBig">
         <span class="lbl">กำไรออเดอร์นี้</span>
@@ -260,7 +306,7 @@ body:not(.in) .who button{display:none}
     <datalist id="groupList"></datalist>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>ตัวเลือก</th><th>หมวด</th><th>บวกราคาบน Grab</th><th>ต้นทุน</th><th>ร้านได้รับหลังหัก GP</th><th>กำไร</th><th></th></tr></thead>
+        <thead><tr><th>ตัวเลือก</th><th>หมวด</th><th>บวกราคาบน Grab</th><th>บวกราคาหน้าร้าน</th><th>ต้นทุน</th><th>ร้านได้รับหลังหัก GP</th><th>กำไร</th><th></th></tr></thead>
         <tbody id="addonBody"></tbody>
       </table>
     </div>
@@ -276,6 +322,11 @@ body:not(.in) .who button{display:none}
         <button class="chip" type="button" data-p="week">7 วัน</button>
         <button class="chip" type="button" data-p="month">รายเดือน</button>
         <button class="chip" type="button" data-p="year">รายปี</button>
+      </div>
+      <div class="chips" id="chReport" role="group" aria-label="ช่องทางขาย">
+        <button class="chip" type="button" data-c="all">ทุกช่องทาง</button>
+        <button class="chip" type="button" data-c="grab">GrabFood</button>
+        <button class="chip" type="button" data-c="shop">หน้าร้าน</button>
       </div>
       <div class="rctl">
         <label for="rDate" id="rDateWrap">วันที่<input id="rDate" type="date"></label>
@@ -298,33 +349,7 @@ body:not(.in) .who button{display:none}
     <p class="msg" id="exportMsg" aria-live="polite"></p>
   </section>
 
-  <!-- FEES -->
-  <section id="tab-fees" class="panel" hidden>
-    <div class="sec">
-      <h2>ค่า GP ของ Grab</h2>
-      <div class="chips" id="gpChips">
-        <button class="chip" type="button" data-gp="30">30%</button>
-        <button class="chip" type="button" data-gp="25">25%</button>
-        <button class="chip" type="button" data-gp="15">15%</button>
-        <button class="chip" type="button" data-gp="9">9%</button>
-      </div>
-      <div class="row2">
-        <label for="gp">GP ที่ร้านคุณจ่าย (%)<input id="gp" type="number" min="0" max="60" step="0.5"></label>
-        <label class="check" for="vat" style="align-self:end;padding-bottom:9px"><input id="vat" type="checkbox"> บวก VAT 7% ของค่า GP และค่าการตลาด</label>
-      </div>
-      <p class="hint">เช็กอัตราจริงของร้านในสัญญาหรือแอป GrabMerchant อัตรา 9% เป็นอัตราพิเศษของร้านที่เข้าร่วมแคมเปญไทยช่วยไทยพลัสกับ GrabFood</p>
-    </div>
-    <div class="sec">
-      <h2>โปรโมชัน ค่าโฆษณาและการตลาด</h2>
-      <div class="row2">
-        <label for="disc">ส่วนลดที่ร้านออกเอง (% ของยอดขาย)<input id="disc" type="number" min="0" max="90" step="1"></label>
-        <label for="target">กำไรที่อยากได้ (% ของราคาบน Grab)<input id="target" type="number" min="0" max="80" step="1"></label>
-        <label for="mkt">ค่าธรรมเนียมการตลาดต่อออเดอร์ (บาท)<input id="mkt" type="number" min="0" step="0.5"></label>
-        <label for="ads">ค่าโฆษณา GrabAds ต่อออเดอร์ (บาท)<input id="ads" type="number" min="0" step="0.5"></label>
-      </div>
-      <p class="hint">ระบบคิด GP จากยอดหลังหักส่วนลดร้าน ค่าโฆษณาต่อออเดอร์ดูได้จากรายงานโฆษณาในแอป GrabMerchant หรือเอางบโฆษณาหารด้วยจำนวนออเดอร์</p>
-    </div>
-  </section>
+
 
   <p class="foot">ข้อมูลเก็บในฐานข้อมูล Supabase ของร้าน · ตัวเลขทั้งหมดเป็นการประมาณ ค่า GP จริง ส่วนลดที่ Grab ช่วยออก และค่าโฆษณาอาจต่างกันในแต่ละร้าน ควรเทียบกับรายงานการเงินในแอป GrabMerchant</p>
 </div>
@@ -352,7 +377,7 @@ let tab=LS.get('gc.tab','order');
 const CFG=window.APP_CONFIG||{};
 const sb=window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
 let uid=null;
-const COLS={menus:['name','price','shop','ings','pack','util','labor'],addons:['name','g','price','cost'],settings:['gp','vat','disc','mkt','ads','target']};
+const COLS={menus:['name','price','shop','ings','pack','util','labor'],addons:['name','g','price','shop','cost'],settings:['gp','vat','disc','mkt','ads','target']};
 const pick=(kind,o)=>Object.fromEntries(COLS[kind].filter(k=>o[k]!==undefined).map(k=>[k,o[k]]));
 const timers={}, queues={}, busy={}, ver={};
 function setStatus(kind,msg){
@@ -373,15 +398,24 @@ async function write(kind,id){
     if(kind==='settings') res=await sb.from('settings').upsert({user_id:uid,...pick('settings',S.settings)});
     else{const body=S[kind][id];res=body?await sb.from(kind).upsert({id,user_id:uid,...pick(kind,body)}):await sb.from(kind).delete().eq('id',id)}
     if(res.error)throw res.error;
-    setStatus('saved');
-  }catch(e){setStatus('err','บันทึกไม่สำเร็จ ลองแก้ไขอีกครั้ง')}
+    setStatus('saved');return true;
+  }catch(e){setStatus('err','บันทึกไม่สำเร็จ ลองแก้ไขอีกครั้ง');return false}
 }
-function editing(){const a=document.activeElement;return a&&a.closest&&a.closest('#tab-menus,#tab-addons,#tab-fees,#orderLines')}
+function saveNow(kind,id){
+  const key=kind+'/'+(id||'main');clearTimeout(timers[key]);busy[key]=true;setStatus('saving');
+  const v=ver[key]=(ver[key]||0)+1;
+  const p=(queues[key]||Promise.resolve()).then(()=>write(kind,id));
+  queues[key]=p.finally(()=>{if(ver[key]===v)busy[key]=false});
+  return p;
+}
+function editing(){const a=document.activeElement;return a&&a.closest&&a.closest('#tab-menus,#tab-addons,#feesBox,#orderLines')}
 
 async function loadAll(){
   setStatus('saving','กำลังโหลดข้อมูล…');
   const [m,a,st]=await Promise.all([sb.from('menus').select('*'),sb.from('addons').select('*'),sb.from('settings').select('*').maybeSingle()]);
-  if(m.error||a.error||st.error){setStatus('err','โหลดข้อมูลไม่สำเร็จ ลองรีเฟรชหน้า');return}
+  const bad=[['menus',m],['addons',a],['settings',st]].find(x=>x[1].error);
+  if(bad){const e=bad[1].error;const missing=/does not exist|schema cache|42P01|PGRST205/i.test((e.code||'')+' '+(e.message||''));
+    setStatus('err',missing?'ยังไม่มีตารางในฐานข้อมูล: รัน schema.sql ใน Supabase':'โหลดข้อมูลไม่สำเร็จ ('+bad[0]+': '+(e.message||e.code)+')');console.error(bad[0],e);return}
   S.menus=Object.fromEntries(m.data.map(r=>[r.id,pick('menus',r)]));
   S.addons=Object.fromEntries(a.data.map(r=>[r.id,pick('addons',r)]));
   S.settings={...DEF,...(st.data?pick('settings',st.data):{})};
@@ -422,7 +456,7 @@ $('logout').onclick=()=>sb.auth.signOut();
 const st=()=>S.settings;
 const vatR=()=>st().vat?0.07:0;
 const keepF=()=>(1-N(st().disc)/100)*(1-N(st().gp)/100*(1+vatR()));
-const perOrder=()=>N(st().ads)+N(st().mkt)*(1+vatR());
+const perOrder=()=>(N(st().ads)+N(st().mkt))*(1+vatR());
 const sumIng=m=>(m.ings||[]).reduce((s,x)=>s+N(x.c),0);
 const menuCost=m=>sumIng(m)+N(m.pack)+N(m.util)+N(m.labor);
 function dishStats(m){
@@ -435,26 +469,39 @@ const pillCls=m=>m<0?'bad':m<0.15?'mid':'good';
 const pct=m=>(m*100).toFixed(1)+'%';
 const byName=o=>Object.entries(o).sort((a,b)=>String(a[1].name||'').localeCompare(String(b[1].name||''),'th'));
 
+let channel=LS.get('gc.ch','grab'), dineIn=LS.get('gc.dine',false);
+const isShop=()=>channel==='shop';
+const mPrice=m=>isShop()?(N(m.shop)||N(m.price)):N(m.price);
+const aPrice=a=>isShop()&&a.shop!==undefined&&a.shop!==null&&a.shop!==''?N(a.shop):N(a.price);
+const chName=c=>c==='shop'?'หน้าร้าน':'GrabFood';
+function renderChannel(){
+  document.querySelectorAll('#chOrder .chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.c===channel)));
+  $('dineWrap').hidden=!isShop();$('dineIn').checked=!!dineIn;
+}
+document.querySelectorAll('#chOrder .chip').forEach(c=>c.onclick=()=>{channel=c.dataset.c;LS.set('gc.ch',channel);renderChannel();renderOrder();renderSlip()});
+$('dineIn').addEventListener('change',()=>{dineIn=$('dineIn').checked;LS.set('gc.dine',dineIn);renderSlip()});
+
 function orderCalc(){
   const s=st();let sub=0,cost=0,count=0;const items=[];
   order.forEach(l=>{
     const m=S.menus[l.menuId];if(!m)return;
     const ads=(l.addons||[]).map(id=>S.addons[id]).filter(Boolean);
-    const unit=N(m.price)+ads.reduce((x,a)=>x+N(a.price),0);
-    const ucost=menuCost(m)+ads.reduce((x,a)=>x+N(a.cost),0);
+    const unit=mPrice(m)+ads.reduce((x,a)=>x+aPrice(a),0);
+    const ucost=menuCost(m)-(isShop()&&dineIn?N(m.pack):0)+ads.reduce((x,a)=>x+N(a.cost),0);
     sub+=unit*l.qty;cost+=ucost*l.qty;count+=l.qty;
     items.push({name:m.name||'เมนูไม่มีชื่อ',qty:l.qty,addons:ads.map(a=>a.name||'ตัวเลือก').join(', '),total:unit*l.qty,
-      rec:{n:m.name||'เมนูไม่มีชื่อ',q:l.qty,p:N(m.price),u:unit,c:ucost,a:ads.map(a=>({n:a.name||'ตัวเลือก',p:N(a.price)}))}});
+      rec:{n:m.name||'เมนูไม่มีชื่อ',q:l.qty,p:mPrice(m),u:unit,c:ucost,a:ads.map(a=>({n:a.name||'ตัวเลือก',p:aPrice(a)}))}});
   });
-  const d=N(s.disc)/100,after=sub*(1-d),gpFee=after*N(s.gp)/100,mkt=count?N(s.mkt):0,vat=(gpFee+mkt)*vatR();
-  const net=after-gpFee-mkt-vat,ads=count?N(s.ads):0,profit=net-cost-ads;
-  return {items,sub,disc:sub-after,gpFee,mkt,vat,net,cost,ads,profit,margin:sub>0?profit/sub:0,food:sub>0?cost/sub:0,count};
+  const sh=isShop(),d=sh?0:N(s.disc)/100,after=sub*(1-d),gpFee=sh?0:after*N(s.gp)/100,mkt=(!sh&&count)?N(s.mkt):0,ads=(!sh&&count)?N(s.ads):0,vatGp=gpFee*vatR(),vatMkt=mkt*vatR(),vatAds=ads*vatR(),vat=vatGp+vatMkt+vatAds;
+  const net=after-gpFee-mkt-ads-vat,profit=net-cost;
+  return {items,sub,disc:sub-after,gpFee,mkt,vat,vatGp,vatMkt,vatAds,net,cost,ads,profit,margin:sub>0?profit/sub:0,food:sub>0?cost/sub:0,count};
 }
 
 /* ---------- render ---------- */
 function renderTabs(){
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===tab)));
-  ['order','menus','addons','report','fees'].forEach(t=>$('tab-'+t).hidden=t!==tab);
+  if(!['order','menus','addons','report'].includes(tab))tab='order';
+  ['order','menus','addons','report'].forEach(t=>$('tab-'+t).hidden=t!==tab);
   if(tab==='report')syncRange();
 }
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;LS.set('gc.tab',tab);renderTabs()});
@@ -472,7 +519,7 @@ function renderOrder(){
   order.forEach((l,i)=>{
     l.addons=(l.addons||[]).filter(id=>S.addons[id]);
     const el=document.createElement('div');el.className='oline';
-    el.innerHTML=`<div class="otop"><select id="ol-${l.key}-m" aria-label="เมนู">${menus.map(([id,m])=>`<option value="${esc(id)}"${id===l.menuId?' selected':''}>${esc(m.name||'เมนูไม่มีชื่อ')} · ฿${N(m.price)}</option>`).join('')}</select>
+    el.innerHTML=`<div class="otop"><select id="ol-${l.key}-m" aria-label="เมนู">${menus.map(([id,m])=>`<option value="${esc(id)}"${id===l.menuId?' selected':''}>${esc(m.name||'เมนูไม่มีชื่อ')} · ฿${mPrice(m)}</option>`).join('')}</select>
       <div class="qty"><button type="button" aria-label="ลดจำนวน">−</button><span>${l.qty}</span><button type="button" aria-label="เพิ่มจำนวน">+</button></div>
       <button class="x" type="button" aria-label="ลบจานนี้">✕</button></div>
       ${addons.length?`<div class="aobox"><span class="lbl-s">ตัวเลือกเสริม:</span><span class="aobox sel"></span><button class="add pick" type="button"></button></div><div class="picker" hidden></div>`:''}`;
@@ -495,7 +542,7 @@ function usage(){return LS.get('gc.usage',{})}
 function wirePicker(el,l){
   const sel=el.querySelector('.sel'),btn=el.querySelector('.pick'),pk=el.querySelector('.picker');
   const drawSel=()=>{
-    sel.innerHTML=l.addons.length?l.addons.map(id=>{const a=S.addons[id];return `<button class="chip" type="button" aria-pressed="true" data-rm="${esc(id)}" aria-label="เอา ${esc(a.name)} ออก">${esc(a.name||'ตัวเลือก')}<small>+฿${N(a.price)}</small> ✕</button>`}).join(''):'<span class="lbl-s">ยังไม่ได้เลือก</span>';
+    sel.innerHTML=l.addons.length?l.addons.map(id=>{const a=S.addons[id];return `<button class="chip" type="button" aria-pressed="true" data-rm="${esc(id)}" aria-label="เอา ${esc(a.name)} ออก">${esc(a.name||'ตัวเลือก')}<small>+฿${aPrice(a)}</small> ✕</button>`}).join(''):'<span class="lbl-s">ยังไม่ได้เลือก</span>';
     sel.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{l.addons=l.addons.filter(x=>x!==b.dataset.rm);LS.set('gc.order',order);drawSel();drawList();renderSlip()});
   };
   const open=pickOpen===l.key;
@@ -505,7 +552,7 @@ function wirePicker(el,l){
     if(pk.hidden)return;
     const list=pk.querySelector('.pk-list');const q=pickQ.trim().toLowerCase();
     let items=byName(S.addons);
-    const item=([id,a])=>`<button class="pk-item" type="button" data-a="${esc(id)}" aria-pressed="${l.addons.includes(id)}"><span>${esc(a.name||'ตัวเลือก')}</span><small>+฿${N(a.price)}</small></button>`;
+    const item=([id,a])=>`<button class="pk-item" type="button" data-a="${esc(id)}" aria-pressed="${l.addons.includes(id)}"><span>${esc(a.name||'ตัวเลือก')}</span><small>+฿${aPrice(a)}</small></button>`;
     let html='';
     if(q){items=items.filter(([,a])=>(String(a.name||'')+' '+groupOf(a)).toLowerCase().includes(q));html=items.length?`<div class="pk-grid">${items.map(item).join('')}</div>`:'<p class="hint">ไม่พบตัวเลือกที่ค้นหา</p>'}
     else if(pickG==='__fav'){const u=usage();items=items.filter(([id])=>u[id]).sort((a,b)=>u[b[0]]-u[a[0]]).slice(0,16);html=items.length?`<div class="pk-grid">${items.map(item).join('')}</div>`:'<p class="hint">ยังไม่มีประวัติ จะแสดงตัวเลือกที่สั่งบ่อยหลังบันทึกออเดอร์</p>'}
@@ -532,13 +579,16 @@ $('clearOrder').onclick=()=>{order=[];commitOrder()};
 
 function renderSlip(){
   const r=orderCalc(),s=st();
-  $('feeBrief').textContent=`GP ${N(s.gp)}%${s.vat?' + VAT':''}`;
+  $('feeBrief').textContent=isShop()?'หน้าร้าน · ไม่มีค่า GP':`GP ${N(s.gp)}%${s.vat?' + VAT':''}`;
+  $('feesBox').hidden=isShop();$('feeSum').textContent=`GP ${N(s.gp)}%${s.vat?' + VAT':''} · ค่าการตลาด ฿${N(s.mkt)} · ค่าโฆษณา ฿${N(s.ads)}/ออเดอร์`;
+  $('slipTitle').textContent=isShop()?'สรุปออเดอร์นี้ · หน้าร้าน':'สรุปออเดอร์นี้ · GrabFood';
+  $('oSubLbl').textContent=isShop()?'ยอดขายหน้าร้าน':'ยอดขายบน Grab';$('oGpRow').hidden=isShop();
   $('oItems').innerHTML=r.items.length?r.items.map(it=>`<div class="ln item"><span>${it.qty}× ${esc(it.name)}${it.addons?`<small>+ ${esc(it.addons)}</small>`:''}</span><span>${baht(it.total)}</span></div>`).join(''):'<p class="hint">ยังไม่มีจานในออเดอร์</p>';
   $('oSub').textContent=baht(r.sub);
   $('oDiscRow').hidden=r.disc===0;$('oDiscLbl').textContent=`ส่วนลดร้าน ${N(s.disc)}%`;$('oDisc').textContent=neg(r.disc);
   $('oGpLbl').textContent=`ค่า GP ${N(s.gp)}%`;$('oGp').textContent=neg(r.gpFee);
   $('oMktRow').hidden=r.mkt===0;$('oMkt').textContent=neg(r.mkt);
-  $('oVatRow').hidden=r.vat===0;$('oVatLbl').textContent=r.mkt>0?'VAT 7% ของ GP และค่าการตลาด':'VAT 7% ของ GP';$('oVat').textContent=neg(r.vat);
+  [['Gp',r.vatGp],['Mkt',r.vatMkt],['Ads',r.vatAds]].forEach(([k,v])=>{$('oVat'+k+'Row').hidden=!(v>0);$('oVat'+k).textContent=neg(v)});
   $('oNet').textContent=baht(r.net);$('oCost').textContent=neg(r.cost);
   $('oAdsRow').hidden=r.ads===0;$('oAds').textContent=neg(r.ads);
   $('oProfit').textContent=signed(r.profit);
@@ -553,7 +603,7 @@ function menuMeta(m){const d=dishStats(m);return `ต้นทุน ${baht(d.co
 function menuStatsHTML(m){const d=dishStats(m);return `
   <div class="stat"><b>${baht(d.cost)}</b><span>ต้นทุนรวมต่อจาน</span></div>
   <div class="stat"><b>${signed(d.profit)}</b><span>กำไรเมื่อสั่ง 1 จาน (${pct(d.margin)})</span></div>
-  <div class="stat"><b>${isFinite(d.rec)?'฿'+up5(d.rec):'—'}</b><span>ราคาแนะนำ กำไร ${N(st().target)}%</span></div>
+  <div class="stat"><b>${isFinite(d.be)?baht(d.be):'—'}</b><span>ราคา Grab ต่ำสุดที่ไม่ขาดทุน</span></div>
   <div class="stat"><b>${isFinite(d.shopP)?'฿'+up5(d.shopP):'—'}</b><span>ราคาที่ได้เท่าขายหน้าร้าน</span></div>`}
 function renderMenus(){
   const box=$('menuList');box.innerHTML='';
@@ -576,7 +626,7 @@ function renderMenus(){
         <label for="m-${id}-labor">ค่าแรง/อื่นๆ<input id="m-${id}-labor" type="number" min="0" step="0.5" data-f="labor"></label>
       </div>
       <div class="mstats">${menuStatsHTML(m)}</div>
-      <div class="mfoot"><button class="del" type="button">ลบเมนูนี้</button></div>
+      <div class="mfoot"><button class="del" type="button">ลบเมนูนี้</button><button class="primary msave" type="button">บันทึกเมนู</button></div>
     </div>`;
     el.addEventListener('toggle',()=>{el.open?openMenus.add(id):openMenus.delete(id);LS.set('gc.open',[...openMenus])});
     el.querySelectorAll('[data-f]').forEach(inp=>{
@@ -594,6 +644,15 @@ function renderMenus(){
       ib.appendChild(r)})};
     drawIngs();
     el.querySelector('.addIng').onclick=()=>{m.ings.push({n:'',c:0});drawIngs();$(`m-${id}-i${m.ings.length-1}n`).focus();save('menus',id)};
+    const sb2=el.querySelector('.msave');
+    sb2.onclick=async()=>{
+      if(!(m.name||'').trim()){sb2.textContent='ใส่ชื่อเมนูก่อน';setTimeout(()=>sb2.textContent='บันทึกเมนู',1600);$(`m-${id}-name`).focus();return}
+      sb2.disabled=true;sb2.textContent='กำลังบันทึก…';
+      const ok=await saveNow('menus',id);
+      sb2.disabled=false;sb2.textContent=ok?'บันทึกแล้ว ✓':'บันทึกไม่สำเร็จ ลองอีกครั้ง';
+      if(ok)setTimeout(()=>{openMenus.delete(id);LS.set('gc.open',[...openMenus]);el.open=false;renderAll()},700);
+      else setTimeout(()=>sb2.textContent='บันทึกเมนู',2000);
+    };
     armDelete(el.querySelector('.del'),'ลบเมนูนี้',()=>{delete S.menus[id];save('menus',id,true);renderAll()});
     box.appendChild(el);
   });
@@ -624,9 +683,11 @@ function renderAddons(){
     tr.innerHTML=`<td><input type="text" id="a-${id}-name" aria-label="ชื่อตัวเลือก" placeholder="เช่น ไข่ดาว"></td>
       <td><input type="text" id="a-${id}-g" aria-label="หมวด" placeholder="เช่น ไข่" list="groupList" style="width:120px"></td>
       <td><input type="number" id="a-${id}-price" aria-label="บวกราคาบน Grab" min="0" step="1"></td>
+      <td><input type="number" id="a-${id}-shop" aria-label="บวกราคาหน้าร้าน" min="0" step="1" placeholder="เท่า Grab"></td>
       <td><input type="number" id="a-${id}-cost" aria-label="ต้นทุน" min="0" step="0.5"></td>
       <td class="n net">${net}</td><td class="pr">${pr}</td><td><button class="del" type="button">ลบ</button></td>`;
-    const [n,g,p,c]=tr.querySelectorAll('input');n.value=a.name||'';g.value=a.g||'';p.value=a.price??'';c.value=a.cost??'';
+    const [n,g,p,ps,c]=tr.querySelectorAll('input');n.value=a.name||'';g.value=a.g||'';p.value=a.price??'';ps.value=a.shop??'';c.value=a.cost??'';
+    ps.oninput=()=>{a.shop=ps.value===''?null:N(ps.value);renderSlip();save('addons',id)};
     g.oninput=()=>{a.g=g.value;save('addons',id)};
     const live=()=>{const [x,y]=addonCells(a);tr.querySelector('.net').innerHTML=x;tr.querySelector('.pr').innerHTML=y;renderSlip()};
     n.oninput=()=>{a.name=n.value;save('addons',id)};
@@ -650,11 +711,11 @@ function armDelete(btn,label,fn){
 /* fees */
 function renderFees(){
   const s=st();
-  ['gp','disc','target','mkt','ads'].forEach(k=>{if(document.activeElement!==$(k))$(k).value=s[k]??''});
+  ['gp','disc','mkt','ads'].forEach(k=>{if(document.activeElement!==$(k))$(k).value=s[k]??''});
   $('vat').checked=!!s.vat;
   document.querySelectorAll('#gpChips .chip').forEach(c=>c.setAttribute('aria-pressed',String(+c.dataset.gp===N(s.gp))));
 }
-['gp','disc','target','mkt','ads'].forEach(k=>$(k).addEventListener('input',()=>{S.settings[k]=N($(k).value);save('settings');renderCalcOnly()}));
+['gp','disc','mkt','ads'].forEach(k=>$(k).addEventListener('input',()=>{S.settings[k]=N($(k).value);save('settings');renderCalcOnly()}));
 $('vat').addEventListener('change',()=>{S.settings.vat=$('vat').checked;save('settings');renderCalcOnly()});
 document.querySelectorAll('#gpChips .chip').forEach(c=>c.onclick=()=>{S.settings.gp=+c.dataset.gp;save('settings');renderFees();renderCalcOnly()});
 
@@ -678,7 +739,7 @@ const r2=n=>Math.round(n*100)/100;
 
 /* ---------- save order ---------- */
 $('orderDate').value=today();
-function rowToOrder(r){return {id:r.id,no:r.no||'',t:r.t,ts:Number(r.ts),items:r.items||[],count:r.count,sub:r.sub,disc:r.disc,gp:r.gp,mkt:r.mkt,vat:r.vat,net:r.net,cost:r.cost,ads:r.ads,profit:r.profit}}
+function rowToOrder(r){return {id:r.id,no:r.no||'',ch:r.ch||'grab',t:r.t,ts:Number(r.ts),items:r.items||[],count:r.count,sub:r.sub,disc:r.disc,gp:r.gp,mkt:r.mkt,vat:r.vat,net:r.net,cost:r.cost,ads:r.ads,profit:r.profit}}
 async function fetchOrders(from,to){
   const out=[];
   for(let i=0;;i+=1000){
@@ -692,7 +753,7 @@ $('saveOrder').onclick=async()=>{
   const r=orderCalc();if(!r.count){flash('saveMsg','ยังไม่มีจานในออเดอร์',true);return}
   const date=$('orderDate').value||today();const now=new Date();
   const no=$('orderNo').value.trim();
-  const rec={id:newId('o'),no,t:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),ts:now.getTime(),
+  const rec={id:newId('o'),no,ch:channel,t:String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),ts:now.getTime(),
     items:r.items.map(i=>i.rec),count:r.count,sub:r2(r.sub),disc:r2(r.disc),gp:r2(r.gpFee),mkt:r2(r.mkt),vat:r2(r.vat),net:r2(r.net),cost:r2(r.cost),ads:r2(r.ads),profit:r2(r.profit)};
   const btn=$('saveOrder');btn.disabled=true;
   try{
@@ -707,6 +768,7 @@ $('saveOrder').onclick=async()=>{
 
 /* ---------- report ---------- */
 let period=LS.get('gc.period','day');
+let rCh=LS.get('gc.rch','all');
 let rDays=null, rKey='', rUnsub=null;
 $('rDate').value=today();$('rMonth').value=today().slice(0,7);$('rYear').value=new Date().getFullYear();
 function range(){
@@ -730,14 +792,17 @@ function syncRange(force){
     rDays=m;renderReport();
   }).catch(()=>{if(key===rKey)$('rRange').textContent='โหลดยอดขายไม่สำเร็จ ลองรีเฟรชหน้า'});
 }
+document.querySelectorAll('#chReport .chip').forEach(c=>c.onclick=()=>{rCh=c.dataset.c;LS.set('gc.rch',rCh);renderReport()});
 document.querySelectorAll('#periodChips .chip').forEach(c=>c.onclick=()=>{period=c.dataset.p;LS.set('gc.period',period);syncRange()});
 ['rDate','rMonth','rYear'].forEach(id=>$(id).addEventListener('change',()=>syncRange()));
 
 function blank(){return {orders:0,count:0,sub:0,disc:0,gp:0,mkt:0,vat:0,net:0,cost:0,ads:0,profit:0}}
-function addTo(a,o){a.orders++;['count','sub','disc','gp','mkt','vat','net','cost','ads','profit'].forEach(k=>a[k]+=N(o[k]))}
+const netOf=o=>N(o.sub)-N(o.disc)-N(o.gp)-N(o.mkt)-N(o.ads)-N(o.vat);
+function addTo(a,o){a.orders++;['count','sub','disc','gp','mkt','vat','cost','ads','profit'].forEach(k=>a[k]+=N(o[k]));a.net+=netOf(o)}
 function buildReport(){
   const {from,to}=range();const tot=blank();const rows=[];const top={};const orders=[];
-  const days=rDays||{};
+  const days={},split={grab:0,shop:0};
+  for(const d in (rDays||{})){const os=(rDays[d].orders||[]).filter(o=>{split[o.ch||'grab']+=N(o.sub);return rCh==='all'||(o.ch||'grab')===rCh});if(os.length)days[d]={date:d,orders:os}}
   Object.keys(days).sort().forEach(d=>(days[d].orders||[]).slice().sort((a,b)=>a.ts-b.ts).forEach(o=>{
     addTo(tot,o);orders.push({date:d,...o});
     (o.items||[]).forEach(it=>{
@@ -748,7 +813,7 @@ function buildReport(){
   if(period==='week'){for(let d=from;d<=to;d=addDays(d,1)){const a=blank();(days[d]?.orders||[]).forEach(o=>addTo(a,o));rows.push({label:thDate(d),key:d,...a})}}
   else if(period==='month'){Object.keys(days).sort().forEach(d=>{const a=blank();(days[d].orders||[]).forEach(o=>addTo(a,o));rows.push({label:thDate(d),key:d,...a})})}
   else if(period==='year'){const y=from.slice(0,4);for(let m=1;m<=12;m++){const p=y+'-'+String(m).padStart(2,'0');const a=blank();Object.keys(days).filter(d=>d.startsWith(p)).forEach(d=>(days[d].orders||[]).forEach(o=>addTo(a,o)));rows.push({label:TH_M[m-1]+' '+(+y+543),key:p,...a})}}
-  return {from,to,tot,rows,orders,top:Object.values(top).sort((a,b)=>b.s-a.s)};
+  return {from,to,tot,rows,orders,split,top:Object.values(top).sort((a,b)=>b.s-a.s)};
 }
 function rangeLabel(R){
   if(period==='day')return 'ยอดขายวันที่ '+thDate(R.from);
@@ -758,23 +823,24 @@ function rangeLabel(R){
 }
 function renderReport(){
   if(tab!=='report')return;
-  const R=buildReport(),t=R.tot,fees=t.disc+t.gp+t.mkt+t.vat,margin=t.sub>0?t.profit/t.sub:0;
-  $('rRange').textContent=rDays?rangeLabel(R):'กำลังโหลดยอดขาย…';
+  document.querySelectorAll('#chReport .chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.c===rCh)));
+  const R=buildReport(),t=R.tot,fees=t.disc+t.gp+t.mkt+t.ads+t.vat,margin=t.sub>0?t.profit/t.sub:0;
+  $('rRange').textContent=rDays?rangeLabel(R)+(rCh==='all'?` · GrabFood ${baht(R.split.grab)} · หน้าร้าน ${baht(R.split.shop)}`:` · เฉพาะ${chName(rCh)}`):'กำลังโหลดยอดขาย…';
   $('kpis').innerHTML=`
     <div class="kpi"><b>${t.orders.toLocaleString('th-TH')}</b><span>ออเดอร์ (${t.count.toLocaleString('th-TH')} จาน)</span></div>
-    <div class="kpi"><b>${baht(t.sub)}</b><span>ยอดขายบน Grab</span></div>
-    <div class="kpi"><b>${baht(fees)}</b><span>ส่วนลด ค่า GP ค่าการตลาด และ VAT</span></div>
+    <div class="kpi"><b>${baht(t.sub)}</b><span>ยอดขาย</span></div>
+    <div class="kpi"><b>${baht(fees)}</b><span>ส่วนลด ค่า GP ค่าการตลาด ค่าโฆษณา และ VAT</span></div>
     <div class="kpi"><b>${baht(t.net)}</b><span>ร้านได้รับจริง</span></div>
-    <div class="kpi"><b>${baht(t.cost+t.ads)}</b><span>ต้นทุนวัตถุดิบ แพ็กเกจ และโฆษณา</span></div>
+    <div class="kpi"><b>${baht(t.cost)}</b><span>ต้นทุนวัตถุดิบและแพ็กเกจ</span></div>
     <div class="kpi hl${t.profit<0?' neg':''}"><b>${signed(t.profit)}</b><span>กำไร ${t.sub>0?'('+pct(margin)+' ของยอดขาย)':''}</span></div>`;
   const head=$('rHead'),body=$('rBody');body.innerHTML='';
   if(period==='day'){
     $('rDetailTitle').textContent='ออเดอร์ของวันนี้';
-    head.innerHTML='<tr><th>เลขออเดอร์</th><th>เวลา</th><th>รายการ</th><th>ยอดขาย</th><th>ร้านได้รับ</th><th>กำไร</th><th></th></tr>';
+    head.innerHTML='<tr><th>เลขออเดอร์</th><th>ช่องทาง</th><th>เวลา</th><th>รายการ</th><th>ยอดขาย</th><th>ร้านได้รับ</th><th>กำไร</th><th></th></tr>';
     R.orders.forEach(o=>{
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td class="n">${o.no?esc(o.no):'<span class="lbl-s">—</span>'}</td><td class="n">${esc(o.t)}</td><td class="items">${(o.items||[]).map(i=>`${i.q}× ${esc(i.n)}${i.a&&i.a.length?` <small>+ ${esc(i.a.map(a=>a.n).join(', '))}</small>`:''}`).join('<br>')}</td>
-        <td class="n">${baht(o.sub)}</td><td class="n">${baht(o.net)}</td><td><span class="pill ${pillCls(o.sub>0?o.profit/o.sub:0)}">${signed(o.profit)}</span></td><td><button class="del" type="button">ลบ</button></td>`;
+      tr.innerHTML=`<td class="n">${o.no?esc(o.no):'<span class="lbl-s">—</span>'}</td><td><span class="pill ch-${o.ch==='shop'?'shop':'grab'}">${chName(o.ch)}</span></td><td class="n">${esc(o.t)}</td><td class="items">${(o.items||[]).map(i=>`${i.q}× ${esc(i.n)}${i.a&&i.a.length?` <small>+ ${esc(i.a.map(a=>a.n).join(', '))}</small>`:''}`).join('<br>')}</td>
+        <td class="n">${baht(o.sub)}</td><td class="n">${baht(netOf(o))}</td><td><span class="pill ${pillCls(o.sub>0?o.profit/o.sub:0)}">${signed(o.profit)}</span></td><td><button class="del" type="button">ลบ</button></td>`;
       armDelete(tr.querySelector('.del'),'ลบ',async()=>{const {error}=await sb.from('orders').delete().eq('id',o.id);if(error)flash('exportMsg','ลบไม่สำเร็จ ลองอีกครั้ง',true);else syncRange(true)});
       body.appendChild(tr);
     });
@@ -785,7 +851,7 @@ function renderReport(){
     const max=Math.max(1,...R.rows.map(r=>r.sub));
     R.rows.forEach(r=>{
       const tr=document.createElement('tr');if(!r.orders)tr.className='zero';
-      tr.innerHTML=`<td>${esc(r.label)}</td><td class="n">${r.orders}</td><td class="n"><span class="bar" style="width:${Math.round(r.sub/max*60)}px"></span>${baht(r.sub)}</td><td class="n">${baht(r.disc+r.gp+r.mkt+r.vat)}</td><td class="n">${baht(r.net)}</td><td class="n">${baht(r.cost+r.ads)}</td><td class="n">${signed(r.profit)}</td>`;
+      tr.innerHTML=`<td>${esc(r.label)}</td><td class="n">${r.orders}</td><td class="n"><span class="bar" style="width:${Math.round(r.sub/max*60)}px"></span>${baht(r.sub)}</td><td class="n">${baht(r.disc+r.gp+r.mkt+r.ads+r.vat)}</td><td class="n">${baht(r.net)}</td><td class="n">${baht(r.cost)}</td><td class="n">${signed(r.profit)}</td>`;
       body.appendChild(tr);
     });
     $('rEmpty').hidden=!!t.orders||!rDays;
@@ -801,12 +867,12 @@ $('exportXlsx').onclick=async()=>{
   const btn=$('exportXlsx');btn.disabled=true;btn.textContent='กำลังสร้างไฟล์…';
   try{
     const X=await loadXLSX();const wb=X.utils.book_new();
-    const sum=[[rangeLabel(R)],[],['รายการ','จำนวน'],['ออเดอร์',t.orders],['จำนวนจาน',t.count],['ยอดขายบน Grab',r2(t.sub)],['ส่วนลดร้าน',r2(t.disc)],['ค่า GP',r2(t.gp)],['ค่าธรรมเนียมการตลาด',r2(t.mkt)],['VAT',r2(t.vat)],['ร้านได้รับจริง',r2(t.net)],['ต้นทุนวัตถุดิบและแพ็กเกจ',r2(t.cost)],['ค่าโฆษณา',r2(t.ads)],['กำไร',r2(t.profit)]];
-    if(R.rows.length){sum.push([],[period==='year'?'เดือน':'วันที่','ออเดอร์','ยอดขาย','ส่วนลดและค่าธรรมเนียม','ร้านได้รับ','ต้นทุนและโฆษณา','กำไร']);R.rows.forEach(r=>sum.push([period==='year'?r.key:r.key,r.orders,r2(r.sub),r2(r.disc+r.gp+r.mkt+r.vat),r2(r.net),r2(r.cost+r.ads),r2(r.profit)]))}
+    const sum=[[rangeLabel(R)+' · '+(rCh==='all'?'ทุกช่องทาง':chName(rCh))],[],['รายการ','จำนวน'],['ออเดอร์',t.orders],['จำนวนจาน',t.count],['ยอดขาย',r2(t.sub)],...(rCh==='all'?[['  ยอดขาย GrabFood',r2(R.split.grab)],['  ยอดขายหน้าร้าน',r2(R.split.shop)]]:[]),['ส่วนลดร้าน',r2(t.disc)],['ค่า GP',r2(t.gp)],['ค่าธรรมเนียมการตลาด',r2(t.mkt)],['ค่าโฆษณา',r2(t.ads)],['VAT',r2(t.vat)],['ร้านได้รับจริง',r2(t.net)],['ต้นทุนวัตถุดิบและแพ็กเกจ',r2(t.cost)],['กำไร',r2(t.profit)]];
+    if(R.rows.length){sum.push([],[period==='year'?'เดือน':'วันที่','ออเดอร์','ยอดขาย','ส่วนลดและค่าธรรมเนียม','ร้านได้รับ','ต้นทุน','กำไร']);R.rows.forEach(r=>sum.push([r.key,r.orders,r2(r.sub),r2(r.disc+r.gp+r.mkt+r.ads+r.vat),r2(r.net),r2(r.cost),r2(r.profit)]))}
     const ws1=X.utils.aoa_to_sheet(sum);ws1['!cols']=[{wch:28},{wch:12},{wch:14},{wch:20},{wch:14},{wch:16},{wch:12}];X.utils.book_append_sheet(wb,ws1,'สรุป');
-    const ord=[['เลขออเดอร์','วันที่','เวลา','รายการ','จำนวนจาน','ยอดขาย','ส่วนลดร้าน','ค่า GP','ค่าการตลาด','VAT','ร้านได้รับ','ต้นทุน','ค่าโฆษณา','กำไร']];
-    R.orders.forEach(o=>ord.push([o.no||'',o.date,o.t,(o.items||[]).map(i=>`${i.q}x ${i.n}${i.a&&i.a.length?' + '+i.a.map(a=>a.n).join(', '):''}`).join(' | '),o.count,o.sub,o.disc,o.gp,o.mkt,o.vat,o.net,o.cost,o.ads,o.profit]));
-    const ws2=X.utils.aoa_to_sheet(ord);ws2['!cols']=[{wch:14},{wch:12},{wch:7},{wch:48},...Array(10).fill({wch:11})];X.utils.book_append_sheet(wb,ws2,'ออเดอร์');
+    const ord=[['เลขออเดอร์','ช่องทาง','วันที่','เวลา','รายการ','จำนวนจาน','ยอดขาย','ส่วนลดร้าน','ค่า GP','ค่าการตลาด','ค่าโฆษณา','VAT','ร้านได้รับ','ต้นทุน','กำไร']];
+    R.orders.forEach(o=>ord.push([o.no||'',chName(o.ch),o.date,o.t,(o.items||[]).map(i=>`${i.q}x ${i.n}${i.a&&i.a.length?' + '+i.a.map(a=>a.n).join(', '):''}`).join(' | '),o.count,o.sub,o.disc,o.gp,o.mkt,o.ads,o.vat,r2(netOf(o)),o.cost,o.profit]));
+    const ws2=X.utils.aoa_to_sheet(ord);ws2['!cols']=[{wch:14},{wch:10},{wch:12},{wch:7},{wch:48},...Array(10).fill({wch:11})];X.utils.book_append_sheet(wb,ws2,'ออเดอร์');
     const top=[['รายการ','ประเภท','จำนวน','ยอดขาย']];R.top.forEach(x=>top.push([x.n,x.type,x.q,r2(x.s)]));
     const ws3=X.utils.aoa_to_sheet(top);ws3['!cols']=[{wch:32},{wch:14},{wch:10},{wch:12}];X.utils.book_append_sheet(wb,ws3,'เมนูขายได้');
     const name=`ยอดขาย-Grab-${period==='day'?R.from:period==='week'?R.from+'_'+R.to:period==='month'?R.from.slice(0,7):R.from.slice(0,4)}.xlsx`;
@@ -817,6 +883,6 @@ $('exportXlsx').onclick=async()=>{
   }finally{btn.disabled=false;btn.textContent='ส่งออก Excel'}
 };
 
-renderAll();
+renderChannel();renderAll();
 boot();
 </script>
