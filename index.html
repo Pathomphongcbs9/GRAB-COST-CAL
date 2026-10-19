@@ -136,7 +136,7 @@ td.n{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 .pk-item[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .pk-item[aria-pressed="true"] span::before{content:"✓ ";color:var(--accent)}
 .atools{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
-.atools label{flex:1 1 220px}
+.atools label{flex:1 1 150px}
 .chtoggle .chip{flex:1 1 0;text-align:center;font-weight:600;padding:9px 12px}
 .pill.ch-grab{background:var(--good-soft);color:var(--good)}
 .pill.ch-shop{background:var(--accent-soft);color:var(--accent)}
@@ -148,6 +148,19 @@ td.n{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 .feesbody h2{font-size:15px}
 .feesbody input{background:var(--surface)}
 .ln.vatln{font-size:13px;padding-left:14px;color:var(--muted)}
+.atools{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);padding-block:6px}
+.atools .primary{flex:none}
+.alist{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.agroup{grid-column:1/-1;margin:6px 0 -2px;font-size:13px;font-weight:600;color:var(--head)}
+.acard{border:1.5px solid var(--line);border-radius:10px;padding:10px;background:var(--tint);display:flex;flex-direction:column;gap:8px;min-width:0}
+.acard.isnew{border-color:var(--accent)}
+.acard .r1{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) auto;gap:6px;align-items:center}
+.acard .r2{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.acard label{font-size:11.5px;gap:2px}
+.acard input{padding:7px 8px;background:var(--surface)}
+.acard .res{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+.acard .res b{font-family:var(--f-num);font-weight:500;color:var(--ink)}
+.acard .del{padding:6px 8px}
 /* save order */
 .saverow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;border-top:1px solid var(--line);padding-top:14px}
 #orderNo{font-family:var(--f-num);background:var(--surface)}
@@ -300,18 +313,13 @@ body:not(.in) .who button{display:none}
   <section id="tab-addons" class="panel" hidden>
     <h2>ตัวเลือกเสริม <small id="addonCount">เช่น ไข่ดาว พิเศษ เพิ่มเนื้อ</small></h2>
     <div class="atools">
-      <label for="addonSearch">ค้นหาตัวเลือกเสริม<input id="addonSearch" type="search" placeholder="พิมพ์ชื่อหรือหมวด"></label>
+      <label for="addonSearch">ค้นหา<input id="addonSearch" type="search" placeholder="พิมพ์ชื่อหรือหมวด"></label>
+      <button class="primary" id="addAddon" type="button">+ เพิ่มตัวเลือก</button>
     </div>
-    <p class="hint">ใส่หมวดให้แต่ละตัวเลือก เช่น ไข่ เพิ่มเนื้อ ท็อปปิ้ง เครื่องดื่ม ตอนคิดออเดอร์จะจัดกลุ่มตามหมวดและค้นหาได้</p>
     <datalist id="groupList"></datalist>
-    <div class="tablewrap">
-      <table>
-        <thead><tr><th>ตัวเลือก</th><th>หมวด</th><th>บวกราคาบน Grab</th><th>บวกราคาหน้าร้าน</th><th>ต้นทุน</th><th>ร้านได้รับหลังหัก GP</th><th>กำไร</th><th></th></tr></thead>
-        <tbody id="addonBody"></tbody>
-      </table>
-    </div>
-    <p class="empty" id="addonEmpty" hidden>ยังไม่มีตัวเลือกเสริม กดปุ่มด้านล่างเพื่อเพิ่มรายการแรก</p>
-    <button class="add" id="addAddon" type="button">+ เพิ่มตัวเลือกเสริม</button>
+    <p class="empty" id="addonEmpty" hidden>ยังไม่มีตัวเลือกเสริม กด “+ เพิ่มตัวเลือก” เพื่อเพิ่มรายการแรก</p>
+    <div class="alist" id="addonList"></div>
+    <p class="hint">ใส่หมวด เช่น ไข่ เพิ่มเนื้อ ท็อปปิ้ง ตอนคิดออเดอร์จะจัดกลุ่มตามหมวดและค้นหาได้ ราคาหน้าร้านเว้นว่างได้ ระบบจะใช้ราคา Grab</p>
   </section>
 
   <!-- REPORT -->
@@ -670,35 +678,45 @@ $('addMenu').onclick=()=>{const id=newId('m');S.menus[id]={name:'',price:0,shop:
 
 /* addons */
 function addonCells(a){const s=addonStats(a);return [baht(s.net),`<span class="pill ${pillCls(s.margin)}">${signed(s.profit)}</span>`]}
+const newAddons=new Set();
 function renderAddons(){
-  const tb=$('addonBody');tb.innerHTML='';
-  const all=byName(S.addons).sort((x,y)=>groupOf(x[1]).localeCompare(groupOf(y[1]),'th'));
+  const box=$('addonList');box.innerHTML='';
+  const all=byName(S.addons).sort((x,y)=>(newAddons.has(y[0])-newAddons.has(x[0]))||groupOf(x[1]).localeCompare(groupOf(y[1]),'th'));
   const q=$('addonSearch').value.trim().toLowerCase();
   const list=q?all.filter(([,a])=>(String(a.name||'')+' '+groupOf(a)).toLowerCase().includes(q)):all;
   $('addonEmpty').hidden=!(ready&&!all.length);
   $('addonCount').textContent=all.length?`ทั้งหมด ${all.length} รายการ${q?` · ตรงกับคำค้น ${list.length}`:''}`:'เช่น ไข่ดาว พิเศษ เพิ่มเนื้อ';
   $('groupList').innerHTML=groups().filter(g=>g!=='อื่นๆ').map(g=>`<option value="${esc(g)}"></option>`).join('');
+  let lastG=null;
   list.forEach(([id,a])=>{
-    const tr=document.createElement('tr');const [net,pr]=addonCells(a);
-    tr.innerHTML=`<td><input type="text" id="a-${id}-name" aria-label="ชื่อตัวเลือก" placeholder="เช่น ไข่ดาว"></td>
-      <td><input type="text" id="a-${id}-g" aria-label="หมวด" placeholder="เช่น ไข่" list="groupList" style="width:120px"></td>
-      <td><input type="number" id="a-${id}-price" aria-label="บวกราคาบน Grab" min="0" step="1"></td>
-      <td><input type="number" id="a-${id}-shop" aria-label="บวกราคาหน้าร้าน" min="0" step="1" placeholder="เท่า Grab"></td>
-      <td><input type="number" id="a-${id}-cost" aria-label="ต้นทุน" min="0" step="0.5"></td>
-      <td class="n net">${net}</td><td class="pr">${pr}</td><td><button class="del" type="button">ลบ</button></td>`;
-    const [n,g,p,ps,c]=tr.querySelectorAll('input');n.value=a.name||'';g.value=a.g||'';p.value=a.price??'';ps.value=a.shop??'';c.value=a.cost??'';
-    ps.oninput=()=>{a.shop=ps.value===''?null:N(ps.value);renderSlip();save('addons',id)};
-    g.oninput=()=>{a.g=g.value;save('addons',id)};
-    const live=()=>{const [x,y]=addonCells(a);tr.querySelector('.net').innerHTML=x;tr.querySelector('.pr').innerHTML=y;renderSlip()};
+    const g=newAddons.has(id)?'รายการใหม่':groupOf(a);
+    if(g!==lastG){const h=document.createElement('div');h.className='agroup';h.textContent=g;box.appendChild(h);lastG=g}
+    const el=document.createElement('div');el.className='acard'+(newAddons.has(id)?' isnew':'');
+    el.innerHTML=`<div class="r1">
+        <input type="text" id="a-${id}-name" aria-label="ชื่อตัวเลือก" placeholder="ชื่อ เช่น ไข่ดาว">
+        <input type="text" id="a-${id}-g" aria-label="หมวด" placeholder="หมวด" list="groupList">
+        <button class="del" type="button" aria-label="ลบตัวเลือกนี้">ลบ</button>
+      </div>
+      <div class="r2">
+        <label for="a-${id}-price">ราคา Grab<input type="number" inputmode="decimal" id="a-${id}-price" min="0" step="1"></label>
+        <label for="a-${id}-shop">ราคาหน้าร้าน<input type="number" inputmode="decimal" id="a-${id}-shop" min="0" step="1" placeholder="เท่า Grab"></label>
+        <label for="a-${id}-cost">ต้นทุน<input type="number" inputmode="decimal" id="a-${id}-cost" min="0" step="0.5"></label>
+      </div>
+      <div class="res"><span>ได้รับหลังหัก GP <b class="net"></b></span><span>กำไร <span class="pr"></span></span></div>`;
+    const [n,gi,p,ps,c]=el.querySelectorAll('input');n.value=a.name||'';gi.value=a.g||'';p.value=a.price??'';ps.value=a.shop??'';c.value=a.cost??'';
+    const live=()=>{const [x,y]=addonCells(a);el.querySelector('.net').innerHTML=x;el.querySelector('.pr').innerHTML=y;renderSlip()};live();
     n.oninput=()=>{a.name=n.value;save('addons',id)};
+    gi.oninput=()=>{a.g=gi.value;save('addons',id)};
     p.oninput=()=>{a.price=N(p.value);live();save('addons',id)};
+    ps.oninput=()=>{a.shop=ps.value===''?null:N(ps.value);renderSlip();save('addons',id)};
     c.oninput=()=>{a.cost=N(c.value);live();save('addons',id)};
-    armDelete(tr.querySelector('.del'),'ลบ',()=>{delete S.addons[id];save('addons',id,true);renderAll()});
-    tb.appendChild(tr);
+    armDelete(el.querySelector('.del'),'ลบ',()=>{delete S.addons[id];newAddons.delete(id);save('addons',id,true);renderAll()});
+    box.appendChild(el);
   });
 }
 $('addonSearch').addEventListener('input',()=>renderAddons());
-$('addAddon').onclick=()=>{const id=newId('a');$('addonSearch').value='';S.addons[id]={name:'',g:'',price:0,cost:0};save('addons',id,true);renderAll();const n=$(`a-${id}-name`);n&&n.focus()};
+$('addAddon').onclick=()=>{const id=newId('a');$('addonSearch').value='';S.addons[id]={name:'',g:'',price:0,cost:0};newAddons.add(id);save('addons',id,true);renderAll();const n=$(`a-${id}-name`);if(n){n.scrollIntoView({block:'center'});n.focus()}};
+$('tab-addons').addEventListener('focusout',e=>{if(newAddons.size&&!$('tab-addons').contains(e.relatedTarget)){newAddons.clear();setTimeout(()=>{if(!editing())renderAddons()},300)}});
 
 function armDelete(btn,label,fn){
   let t;btn.onclick=()=>{
@@ -883,6 +901,9 @@ $('exportXlsx').onclick=async()=>{
   }finally{btn.disabled=false;btn.textContent='ส่งออก Excel'}
 };
 
+/* มือถือ: กด Enter/เสร็จ แล้วปิดแป้นพิมพ์ */
+document.addEventListener('focusin',e=>{const t=e.target;if(t.tagName==='INPUT'&&!t.hasAttribute('enterkeyhint'))t.setAttribute('enterkeyhint',t.type==='search'?'search':'done')});
+document.addEventListener('keydown',e=>{const t=e.target;if(e.key==='Enter'&&!e.isComposing&&t.tagName==='INPUT'&&!t.closest('#authForm')){e.preventDefault();t.blur()}});
 renderChannel();renderAll();
 boot();
 </script>
