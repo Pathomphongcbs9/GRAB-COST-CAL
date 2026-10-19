@@ -811,7 +811,8 @@ $('saveOrder').onclick=async()=>{
     flash('saveMsg',`บันทึกออเดอร์${no?' '+no:''}แล้ว (${thDate(date)} · กำไร ${signed(rec.profit)})`);
     $('orderNo').value='';order=[];commitOrder();
   }catch(e){
-    flash('saveMsg','บันทึกไม่สำเร็จ ลองกดอีกครั้ง',true);
+    const m=((e&&e.code)||'')+' '+((e&&e.message)||'');console.error('save order',e);
+    flash('saveMsg',/column|PGRST204|42703|schema cache/i.test(m)?'ฐานข้อมูลยังไม่ได้อัปเดต: รัน update-2-channels.sql ใน Supabase':'บันทึกไม่สำเร็จ: '+((e&&e.message)||'ลองกดอีกครั้ง'),true);
   }finally{btn.disabled=false}
 };
 
