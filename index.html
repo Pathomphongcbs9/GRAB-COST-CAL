@@ -247,11 +247,13 @@ body:not(.in) .who button{display:none}
   </header>
 
   <section id="authView" class="panel">
-    <h2>เข้าสู่ระบบ</h2>
-    <form id="authForm">
-      <label for="email">อีเมล<input id="email" type="email" autocomplete="email" required></label>
+    <h2 id="authTitle">เข้าสู่ระบบ</h2>
+    <form id="authForm" novalidate>
+      <label for="uname">ชื่อผู้ใช้ (ID)<input id="uname" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="เช่น padaeng" required></label>
       <label for="password">รหัสผ่าน (อย่างน้อย 6 ตัว)<input id="password" type="password" autocomplete="current-password" minlength="6" required></label>
-      <div class="authbtns"><button class="primary" type="submit" id="signin">เข้าสู่ระบบ</button><button type="button" id="signup">สมัครบัญชีใหม่</button></div>
+      <label for="password2" id="pw2Wrap" hidden>ยืนยันรหัสผ่านอีกครั้ง<input id="password2" type="password" autocomplete="new-password" minlength="6"></label>
+      <div class="authbtns"><button class="primary" type="submit" id="signin">เข้าสู่ระบบ</button><button type="button" id="switchMode">สมัครบัญชีใหม่</button></div>
+      <p class="hint" id="authHint">ชื่อผู้ใช้ใช้ได้เฉพาะ a–z 0–9 จุด ขีด และขีดล่าง 3–20 ตัว ไม่ต้องใช้อีเมล บัญชีเดิมที่สมัครด้วยอีเมลยังเข้าด้วยอีเมลได้</p>
       <p class="msg" id="authMsg" aria-live="polite"></p>
     </form>
   </section>
@@ -473,7 +475,7 @@ function applySession(session){
   const u=session&&session.user?session.user.id:null;
   if(u===uid)return;uid=u;
   document.body.classList.toggle('in',!!uid);
-  $('who').textContent=session&&session.user?session.user.email:'';
+  $('who').textContent=session&&session.user?showName(session.user.email):'';
   ready=false;S.menus={};S.addons={};S.settings={...DEF};rDays=null;rKey='';
   if(uid){renderAll();loadAll()}else setStatus('','กรุณาเข้าสู่ระบบ');
 }
@@ -482,21 +484,38 @@ async function boot(){
   sb.auth.onAuthStateChange((_e,session)=>applySession(session));
   const {data}=await sb.auth.getSession();applySession(data.session);
 }
+/* เข้าสู่ระบบด้วยชื่อผู้ใช้: แปลงเป็นอีเมลภายใน (ไม่มีการส่งอีเมลจริง) */
+const UDOMAIN=(CFG.USERNAME_DOMAIN||'pos-baanbaan.app').toLowerCase();
+const toEmail=u=>{u=u.trim().toLowerCase();return u.includes('@')?u:u+'@'+UDOMAIN};
+const showName=e=>!e?'':e.endsWith('@'+UDOMAIN)?e.slice(0,-UDOMAIN.length-1):e;
+const okName=u=>u.includes('@')||/^[a-z0-9._-]{3,20}$/.test(u.trim().toLowerCase());
+let authMode='in';
+function setAuthMode(m){
+  authMode=m;const up=m==='up';
+  $('authTitle').textContent=up?'สมัครบัญชีใหม่':'เข้าสู่ระบบ';
+  $('signin').textContent=up?'สมัครและเข้าใช้งาน':'เข้าสู่ระบบ';
+  $('switchMode').textContent=up?'มีบัญชีแล้ว เข้าสู่ระบบ':'สมัครบัญชีใหม่';
+  $('pw2Wrap').hidden=!up;$('password').autocomplete=up?'new-password':'current-password';$('authMsg').textContent='';
+}
+$('switchMode').onclick=()=>setAuthMode(authMode==='up'?'in':'up');
 $('authForm').addEventListener('submit',async e=>{
-  e.preventDefault();$('signin').disabled=true;
-  const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});
-  $('signin').disabled=false;
-  if(error)flash('authMsg',/confirm/i.test(error.message)?'ยังไม่ได้ยืนยันอีเมล เปิดลิงก์ยืนยันในอีเมลก่อน':'อีเมลหรือรหัสผ่านไม่ถูกต้อง',true);
+  e.preventDefault();
+  const u=$('uname').value,pw=$('password').value;
+  if(!okName(u)){flash('authMsg','ชื่อผู้ใช้ต้องเป็น a–z 0–9 . _ - ยาว 3–20 ตัว',true);return}
+  if(pw.length<6){flash('authMsg','รหัสผ่านต้องมีอย่างน้อย 6 ตัว',true);return}
+  const btn=$('signin');btn.disabled=true;
+  if(authMode==='up'){
+    if(pw!==$('password2').value){btn.disabled=false;flash('authMsg','รหัสผ่านสองช่องไม่ตรงกัน',true);return}
+    const {data,error}=await sb.auth.signUp({email:toEmail(u),password:pw,options:{data:{username:u.trim().toLowerCase()}}});
+    btn.disabled=false;
+    if(error)flash('authMsg',/registered|exists/i.test(error.message)?'ชื่อผู้ใช้นี้มีคนใช้แล้ว ลองชื่ออื่น':'สมัครไม่สำเร็จ: '+error.message,true);
+    else if(!data.session)flash('authMsg','สมัครแล้ว แต่ระบบยังรอยืนยันอีเมล ให้ปิด Confirm email ใน Supabase ก่อน',true);
+  }else{
+    const {error}=await sb.auth.signInWithPassword({email:toEmail(u),password:pw});
+    btn.disabled=false;
+    if(error)flash('authMsg',/confirm/i.test(error.message)?'บัญชียังไม่ได้ยืนยัน ให้ปิด Confirm email ใน Supabase':'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',true);
+  }
 });
-$('signup').onclick=async()=>{
-  const email=$('email').value.trim(),password=$('password').value;
-  if(!email||password.length<6){flash('authMsg','ใส่อีเมลและรหัสผ่านอย่างน้อย 6 ตัวก่อน',true);return}
-  $('signup').disabled=true;
-  const {data,error}=await sb.auth.signUp({email,password});
-  $('signup').disabled=false;
-  if(error)flash('authMsg','สมัครไม่สำเร็จ: '+error.message,true);
-  else if(!data.session)flash('authMsg','สมัครแล้ว เปิดลิงก์ยืนยันในอีเมล แล้วกลับมาเข้าสู่ระบบ');
-};
 $('logout').onclick=()=>sb.auth.signOut();
 
 /* ---------- math ---------- */
