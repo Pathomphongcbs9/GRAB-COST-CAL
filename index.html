@@ -161,6 +161,36 @@ td.n{font-family:var(--f-num);font-variant-numeric:tabular-nums}
 .acard .res{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
 .acard .res b{font-family:var(--f-num);font-weight:500;color:var(--ink)}
 .acard .del{padding:6px 8px}
+@media (max-width:640px){
+  #tab-report table{min-width:0}
+  #tab-report thead{display:none}
+  #tab-report .tablewrap{overflow:visible}
+  #tab-report tbody tr{display:grid;grid-template-columns:1fr 1fr;gap:3px 14px;padding:10px 0;border-bottom:1px solid var(--line)}
+  #tab-report tbody tr.zero{display:none}
+  #tab-report tbody td{display:flex;justify-content:space-between;align-items:center;gap:8px;border:0;padding:1px 0;white-space:normal;text-align:right;min-width:0}
+  #tab-report tbody td[data-label]::before{content:attr(data-label);color:var(--muted);font-size:12px;text-align:left;font-family:var(--f-body)}
+  #tab-report td.head{grid-column:1/-1;font-weight:600;color:var(--head);justify-content:flex-start}
+  #tab-report td.full{grid-column:1/-1;display:block;text-align:left;min-width:0;padding:4px 0}
+  #tab-report td.act{grid-column:1/-1;justify-content:flex-end}
+  #tab-report tr.top{grid-template-columns:1fr 1fr 1fr}
+  #tab-report tr.top td{flex-direction:column;align-items:flex-start;gap:0}
+  #tab-report tr.top td.head{flex-direction:row}
+  #tab-report .bar{display:none}
+  .kpi b{font-size:17px}
+  .rctl label{width:auto;flex:1 1 140px}
+}
+.olist{display:flex;flex-direction:column;gap:8px}
+details.ord{border:1.5px solid var(--line);border-radius:10px;background:var(--surface)}
+details.ord[open]{border-color:var(--frame)}
+.ord summary{list-style:none;cursor:pointer;padding:10px 12px;display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:4px 10px;align-items:center}
+.ord summary::-webkit-details-marker{display:none}
+.ord .t{font-family:var(--f-num);color:var(--muted);font-size:13px}
+.ord .no{font-family:var(--f-num);font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ord .amt{font-family:var(--f-num);font-weight:600;text-align:right;color:var(--ink)}
+.ord .sub2{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);min-width:0}
+.ord .its{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.ord .obody{padding:10px 12px 12px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:10px;font-size:14px}
+.ofoot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 /* save order */
 .saverow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;border-top:1px solid var(--line);padding-top:14px}
 #orderNo{font-family:var(--f-num);background:var(--surface)}
@@ -347,7 +377,8 @@ body:not(.in) .who button{display:none}
     <div class="kpis" id="kpis"></div>
     <div class="sec">
       <h2 id="rDetailTitle">รายละเอียด</h2>
-      <div class="tablewrap"><table><thead id="rHead"></thead><tbody id="rBody"></tbody></table></div>
+      <div class="tablewrap" id="rTableWrap"><table><thead id="rHead"></thead><tbody id="rBody"></tbody></table></div>
+      <div class="olist" id="rOrders"></div>
       <p class="empty" id="rEmpty" hidden>ยังไม่มีออเดอร์ในช่วงนี้ บันทึกออเดอร์ได้จากแท็บ “คิดออเดอร์”</p>
     </div>
     <div class="sec">
@@ -839,6 +870,7 @@ function rangeLabel(R){
   if(period==='month'){const d=parseD(R.from);return `ยอดขายเดือน${TH_M[d.getMonth()]} ${d.getFullYear()+543}`}
   return 'ยอดขายปี '+(+R.from.slice(0,4)+543);
 }
+const openOrders=new Set();
 function renderReport(){
   if(tab!=='report')return;
   document.querySelectorAll('#chReport .chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.c===rCh)));
@@ -852,15 +884,33 @@ function renderReport(){
     <div class="kpi"><b>${baht(t.cost)}</b><span>ต้นทุนวัตถุดิบและแพ็กเกจ</span></div>
     <div class="kpi hl${t.profit<0?' neg':''}"><b>${signed(t.profit)}</b><span>กำไร ${t.sub>0?'('+pct(margin)+' ของยอดขาย)':''}</span></div>`;
   const head=$('rHead'),body=$('rBody');body.innerHTML='';
+  $('rTableWrap').hidden=period==='day';$('rOrders').hidden=period!=='day';$('rOrders').innerHTML='';
   if(period==='day'){
-    $('rDetailTitle').textContent='ออเดอร์ของวันนี้';
-    head.innerHTML='<tr><th>เลขออเดอร์</th><th>ช่องทาง</th><th>เวลา</th><th>รายการ</th><th>ยอดขาย</th><th>ร้านได้รับ</th><th>กำไร</th><th></th></tr>';
-    R.orders.forEach(o=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td class="n">${o.no?esc(o.no):'<span class="lbl-s">—</span>'}</td><td><span class="pill ch-${o.ch==='shop'?'shop':'grab'}">${chName(o.ch)}</span></td><td class="n">${esc(o.t)}</td><td class="items">${(o.items||[]).map(i=>`${i.q}× ${esc(i.n)}${i.a&&i.a.length?` <small>+ ${esc(i.a.map(a=>a.n).join(', '))}</small>`:''}`).join('<br>')}</td>
-        <td class="n">${baht(o.sub)}</td><td class="n">${baht(netOf(o))}</td><td><span class="pill ${pillCls(o.sub>0?o.profit/o.sub:0)}">${signed(o.profit)}</span></td><td><button class="del" type="button">ลบ</button></td>`;
-      armDelete(tr.querySelector('.del'),'ลบ',async()=>{const {error}=await sb.from('orders').delete().eq('id',o.id);if(error)flash('exportMsg','ลบไม่สำเร็จ ลองอีกครั้ง',true);else syncRange(true)});
-      body.appendChild(tr);
+    $('rDetailTitle').textContent=`ออเดอร์ (${R.orders.length}) · กดเพื่อดูรายละเอียด`;
+    R.orders.slice().reverse().forEach(o=>{
+      const el=document.createElement('details');el.className='ord';el.open=openOrders.has(o.id);
+      const sh=o.ch==='shop',net=netOf(o);
+      const itemsShort=(o.items||[]).map(i=>`${i.q}× ${i.n}`).join(', ');
+      const line=(l,v,cls)=>v?`<div class="ln ${cls||''}"><span>${l}</span><span>${cls&&cls.includes('minus')?neg(v):baht(v)}</span></div>`:'';
+      el.innerHTML=`<summary>
+          <span class="t">${esc(o.t)}</span><span class="pill ch-${sh?'shop':'grab'}">${chName(o.ch)}</span>
+          <span class="no">${o.no?esc(o.no):''}</span><span class="amt">${baht(o.sub)}</span>
+          <span class="sub2"><span class="its">${esc(itemsShort)}</span><span class="pill ${pillCls(o.sub>0?o.profit/o.sub:0)}">กำไร ${signed(o.profit)}</span></span>
+        </summary>
+        <div class="obody">
+          <div class="lines">${(o.items||[]).map(i=>`<div class="ln item"><span>${i.q}× ${esc(i.n)} <small>฿${N(i.p)}${i.a&&i.a.length?' + '+esc(i.a.map(a=>a.n+' ฿'+N(a.p)).join(', ')):''}</small></span><span>${baht(N(i.u)*i.q)}</span></div>`).join('')}</div>
+          <div class="lines">
+            <div class="ln total"><span>ยอดขาย</span><span>${baht(o.sub)}</span></div>
+            ${line('ส่วนลดร้าน',o.disc,'minus')}${line('ค่า GP',o.gp,'minus')}${line('ค่าธรรมเนียมการตลาด',o.mkt,'minus')}${line('ค่าโฆษณา',o.ads,'minus')}${line('VAT',o.vat,'minus')}
+            <div class="ln total"><span>ร้านได้รับจริง</span><span>${baht(net)}</span></div>
+            ${line('ต้นทุนวัตถุดิบและแพ็กเกจ',o.cost,'minus')}
+            <div class="ln total"><span>กำไร</span><span>${signed(o.profit)}</span></div>
+          </div>
+          <div class="ofoot"><span class="lbl-s">${o.no?'เลขออเดอร์ '+esc(o.no)+' · ':''}บันทึกเวลา ${esc(o.t)}</span><button class="del" type="button">ลบออเดอร์</button></div>
+        </div>`;
+      el.addEventListener('toggle',()=>{el.open?openOrders.add(o.id):openOrders.delete(o.id)});
+      armDelete(el.querySelector('.del'),'ลบออเดอร์',async()=>{const {error}=await sb.from('orders').delete().eq('id',o.id);if(error)flash('exportMsg','ลบไม่สำเร็จ ลองอีกครั้ง',true);else syncRange(true)});
+      $('rOrders').appendChild(el);
     });
     $('rEmpty').hidden=!!R.orders.length||!rDays;
   }else{
@@ -869,12 +919,12 @@ function renderReport(){
     const max=Math.max(1,...R.rows.map(r=>r.sub));
     R.rows.forEach(r=>{
       const tr=document.createElement('tr');if(!r.orders)tr.className='zero';
-      tr.innerHTML=`<td>${esc(r.label)}</td><td class="n">${r.orders}</td><td class="n"><span class="bar" style="width:${Math.round(r.sub/max*60)}px"></span>${baht(r.sub)}</td><td class="n">${baht(r.disc+r.gp+r.mkt+r.ads+r.vat)}</td><td class="n">${baht(r.net)}</td><td class="n">${baht(r.cost)}</td><td class="n">${signed(r.profit)}</td>`;
+      tr.innerHTML=`<td class="head">${esc(r.label)}</td><td class="n" data-label="ออเดอร์">${r.orders}</td><td class="n" data-label="ยอดขาย"><span class="bar" style="width:${Math.round(r.sub/max*60)}px"></span>${baht(r.sub)}</td><td class="n" data-label="ค่าธรรมเนียม">${baht(r.disc+r.gp+r.mkt+r.ads+r.vat)}</td><td class="n" data-label="ร้านได้รับ">${baht(r.net)}</td><td class="n" data-label="ต้นทุน">${baht(r.cost)}</td><td class="n" data-label="กำไร">${signed(r.profit)}</td>`;
       body.appendChild(tr);
     });
     $('rEmpty').hidden=!!t.orders||!rDays;
   }
-  $('rTop').innerHTML=R.top.length?R.top.map(x=>`<tr><td>${esc(x.n)}</td><td>${x.type}</td><td class="n">${x.q}</td><td class="n">${baht(x.s)}</td></tr>`).join(''):'<tr><td colspan="4" class="hint">ยังไม่มีข้อมูล</td></tr>';
+  $('rTop').innerHTML=R.top.length?R.top.map(x=>`<tr class="top"><td class="head">${esc(x.n)}</td><td data-label="ประเภท">${x.type}</td><td class="n" data-label="จำนวน">${x.q}</td><td class="n" data-label="ยอดขาย">${baht(x.s)}</td></tr>`).join(''):'<tr><td colspan="4" class="hint">ยังไม่มีข้อมูล</td></tr>';
 }
 
 /* ---------- excel ---------- */
